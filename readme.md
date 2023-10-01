@@ -30,8 +30,8 @@ An advanced unique identifier system for FiveM
 
 ### [Video](https://youtu.be/6CzgZKzR0zY?si=dYRg81a6lwhEq6d0)
 
-![Discord Log](https://i.imgur.com/OLi4beP.png)
-![Main Page](https://i.imgur.com/0obglWF.png)
+![Discord Log](https://i.imgur.com/l5hhO8e.png)
+![Main Page](https://i.imgur.com/4heQ0rN.png)
 
 ## Installation
 

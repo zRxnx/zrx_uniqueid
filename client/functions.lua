@@ -11,16 +11,19 @@ OpenMainMenu = function()
 
     for i, data in pairs(UID_DATA) do
         MENU[#MENU + 1] = {
-            title = (Strings.view_title):format(data),
+            title = (Strings.view_title):format(data.uid),
             description = Strings.view_desc,
             arrow = true,
             icon = 'fa-solid fa-user',
             iconColor = Config.IconColor,
             args = {
-                uid = data
+                uid = data.uid,
+                online = data.online,
+                id = data.id,
+                name = data.name
             },
             onSelect = function(args)
-                OpenManageMenu(args.uid)
+                OpenManageMenu(args)
             end
         }
     end
@@ -34,12 +37,30 @@ OpenMainMenu = function()
     lib.showContext('zrx_uniqueid:menu:main')
 end
 
-OpenManageMenu = function(uid)
+OpenManageMenu = function(data)
     local MENU = {}
     local isPlayerAllowed = lib.callback.await('zrx_uniqueid:server:isPlayerAllowed', 500)
 
     if not isPlayerAllowed then
         return Config.Notification(nil, Strings.no_perms)
+    end
+
+    MENU[#MENU + 1] = {
+        title = Strings.manage_state_title,
+        description = (Strings.manage_state_desc):format(data.online and Strings.online or Strings.offline),
+        arrow = false,
+        icon = 'fa-solid fa-user',
+        iconColor = Config.IconColor,
+    }
+
+    if data.online then
+        MENU[#MENU + 1] = {
+            title = Strings.manage_data_title,
+            description = (Strings.manage_data_desc):format(data.name, data.id),
+            arrow = false,
+            icon = 'fa-solid fa-user',
+            iconColor = Config.IconColor,
+        }
     end
 
     MENU[#MENU + 1] = {
@@ -52,7 +73,7 @@ OpenManageMenu = function(uid)
             local input = lib.inputDialog(Strings.alert_title, {
                 {
                     type = 'number',
-                    label = (Strings.alert_label):format(uid),
+                    label = (Strings.alert_label):format(data.uid),
                     description = Strings.alert_desc,
                     required = true,
                     min = 1,
@@ -62,17 +83,17 @@ OpenManageMenu = function(uid)
 
             if not input then
                 Config.Notification(nil, Strings.not_fill)
-                return OpenManageMenu(uid)
+                return OpenManageMenu(data.uid)
             end
 
             local response = lib.callback.await('zrx_uniqueid:server:checkUniqueID', 500)
 
             if not response then
                 Config.Notification(nil, Strings.already_in_use)
-                return OpenManageMenu(uid)
+                return OpenManageMenu(data.uid)
             end
 
-            TriggerServerEvent('zrx_uniqueid:server:changeUniqueID', uid, input)
+            TriggerServerEvent('zrx_uniqueid:server:changeUniqueID', data.uid, input[1])
         end
     }
 
