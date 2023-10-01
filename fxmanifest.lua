@@ -5,7 +5,7 @@ use_experimental_fxv2_oal 'yes'
 
 author 'zRxnx'
 description 'Advanced unique identifier system'
-version '1.0.0'
+version '1.0.1'
 
 dependencies {
     'es_extended',
