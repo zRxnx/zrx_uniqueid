@@ -18,6 +18,7 @@ An advanced unique identifier system for FiveM
 
 - GetUID (client & server)
 - GetID (server)
+- ChangeUID (server)
 
 ## Requirements
 

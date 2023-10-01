@@ -89,6 +89,16 @@ exports('GetID', function(uid)
     return IDUnique[uid]
 end)
 
+exports('ChangeUID', function(oldUID, newUID)
+    MySQL.update.await('UPDATE zrx_uniqueid SET uid = ? WHERE uid = ?', {
+        newUID, oldUID
+    })
+
+    if IDUnique[oldUID] then
+        Player.Load(IDUnique[oldUID])
+    end
+end)
+
 exports('hasCooldown', function(player)
     return not not COOLDOWN[PLAYER_CACHE[player].identifier]
 end)
