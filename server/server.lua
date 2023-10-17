@@ -1,9 +1,14 @@
-ESX, PLAYER_CACHE, FETCHED, COOLDOWN, LOC_DATA, LOADED = Config.EsxImport(), {}, {}, {}, {}, {}
+CORE = exports.zrx_utility:GetUtility()
+PLAYER_CACHE, FETCHED, COOLDOWN, LOC_DATA, LOADED = {}, {}, {}, {}, {}
 UniqueID, IDUnique = {}, {}
 local GetPlayers = GetPlayers
 local GetPlayerName = GetPlayerName
 
 CreateThread(function()
+    if Config.CheckForUpdates then
+        CORE.Server.CheckVersion('zrx_uniqueid')
+    end
+
     MySQL.Sync.execute([[
         CREATE Table IF NOT EXISTS `zrx_uniqueid` (
             `identifier` varchar(255) DEFAULT NULL,
@@ -12,11 +17,13 @@ CreateThread(function()
         ) ENGINE=InnoDB;
     ]])
 
-    for i, data in pairs(GetPlayers()) do
-        data = tonumber(data)
-        PLAYER_CACHE[data] = GetPlayerData(data)
+    for i, player in pairs(GetPlayers()) do
+        player = tonumber(player)
+        PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
 
-        Player.Load(data)
+        if not LOADED[player] then
+            Player.Load(player)
+        end
     end
 end)
 
@@ -26,27 +33,24 @@ AddEventHandler('playerDropped', function()
     end
 end)
 
-lib.callback.register('zrx_uniqueid:server:getData', function(source)
-    if LOADED[source] then
-        return Config.PunishPlayer(source, 'Tried to trigger "zrx_uniqueid:server:getData"')
-    end
+lib.callback.register('zrx_uniqueid:server:getData', function(player)
+    if LOADED[player] then return end
 
-    LOADED[source] = true
-    PLAYER_CACHE[source] = GetPlayerData(source)
+    PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
 
-    return Player.Load(source)
+    return Player.Load(player)
 end)
 
-lib.callback.register('zrx_uniqueid:server:isPlayerAllowed', function(source)
-    return Player.IsAllowed(source)
+lib.callback.register('zrx_uniqueid:server:isPlayerAllowed', function(player)
+    return Player.IsAllowed(player)
 end)
 
-lib.callback.register('zrx_uniqueid:server:getUidData', function(source)
-    if not Player.IsAllowed(source) then
-        return Config.PunishPlayer(source, 'Tried to trigger "zrx_uniqueid:server:getUidData"')
+lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
+    if not Player.IsAllowed(player) then
+        return Config.PunishPlayer(player, 'Tried to trigger "zrx_uniqueid:server:getUidData"')
     end
 
-    if not Player.IsAllowed(source) then
+    if not Player.IsAllowed(player) then
         return {}
     end
 
@@ -65,9 +69,9 @@ lib.callback.register('zrx_uniqueid:server:getUidData', function(source)
     return DATA
 end)
 
-lib.callback.register('zrx_uniqueid:server:checkUniqueID', function(source, uid)
-    if not Player.IsAllowed(source) then
-        return Config.PunishPlayer(source, 'Tried to trigger "zrx_uniqueid:server:checkUniqueID"')
+lib.callback.register('zrx_uniqueid:server:checkUniqueID', function(player, uid)
+    if not Player.IsAllowed(player) then
+        return Config.PunishPlayer(player, 'Tried to trigger "zrx_uniqueid:server:checkUniqueID"')
     end
 
     local response = MySQL.query.await('SELECT `identifier` FROM `zrx_uniqueid` WHERE `uid` = ?', {
@@ -86,8 +90,15 @@ RegisterNetEvent('zrx_uniqueid:server:changeUniqueID', function(oldUID, newUID)
         return Config.PunishPlayer(source, 'Tried to trigger "zrx_uniqueid:server:changeUniqueID"')
     end
 
-    if Webhook.Settings.change then
-        DiscordLog(source, 'CHANGE', ('Player %s (%s) change the UID from %s to %s'):format(GetPlayerName(source), source, oldUID, newUID), 'change')
+    if Webhook.Links.change:len() > 0 then
+        local message = ([[
+            The player changed a UniqueID
+
+            Old UniqueID: **%s**
+            New UniqueID: **%s**
+        ]]):format(oldUID, newUID)
+
+        CORE.Server.DiscordLog(source, 'CHANGE', message, Webhook.Links.change)
     end
 
     MySQL.update.await('UPDATE zrx_uniqueid SET uid = ? WHERE uid = ?', {

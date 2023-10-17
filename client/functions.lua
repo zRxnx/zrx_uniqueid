@@ -6,7 +6,7 @@ OpenMainMenu = function()
     local UID_DATA = lib.callback.await('zrx_uniqueid:server:getUidData', 500)
 
     if not isPlayerAllowed then
-        return Config.Notification(nil, Strings.no_perms)
+        return CORE.Bridge.notification(Strings.no_perms)
     end
 
     for i, data in pairs(UID_DATA) do
@@ -42,7 +42,7 @@ OpenManageMenu = function(data)
     local isPlayerAllowed = lib.callback.await('zrx_uniqueid:server:isPlayerAllowed', 500)
 
     if not isPlayerAllowed then
-        return Config.Notification(nil, Strings.no_perms)
+        return CORE.Bridge.notification(Strings.no_perms)
     end
 
     MENU[#MENU + 1] = {
@@ -82,14 +82,14 @@ OpenManageMenu = function(data)
             })
 
             if not input then
-                Config.Notification(nil, Strings.not_fill)
+                CORE.Bridge.notification(Strings.not_fill)
                 return OpenManageMenu(data.uid)
             end
 
             local response = lib.callback.await('zrx_uniqueid:server:checkUniqueID', 500)
 
             if not response then
-                Config.Notification(nil, Strings.already_in_use)
+                CORE.Bridge.notification(Strings.already_in_use)
                 return OpenManageMenu(data.uid)
             end
 
