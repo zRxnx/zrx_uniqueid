@@ -1,10 +1,10 @@
-ESX, UniqueID = Config.EsxImport(), 0
+CORE = exports.zrx_utility:GetUtility()
+UniqueID = 0
 local NetworkIsPlayerActive = NetworkIsPlayerActive
 
-RegisterCommand(Config.Command, function() OpenMainMenu() end)
-RegisterKeyMapping(Config.Command, Strings.cmd_desc, 'keyboard', Config.Key)
-TriggerEvent('chat:addSuggestion', ('/%s'):format(Config.Command), Strings.cmd_desc, {})
-
+CORE.Client.RegisterKeyMappingCommand(Config.Command, Strings.cmd_desc, Config.Key, function()
+    OpenMainMenu()
+end)
 
 RegisterNetEvent('zrx_uniqueid:client:getData', function(UID)
     UniqueID = UID

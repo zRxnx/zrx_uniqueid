@@ -3,7 +3,12 @@ Config = {}
 Config.CheckForUpdates = true --| Check for updates?
 Config.IconColor = 'rgba(173, 216, 230, 1)' --| rgba format
 Config.Command = 'manageuid' --| Command to open manage menu
-Config.Key = '' --| Keymapping
+Config.Key = 'F12' --| Keymapping
+
+Config.Menu = {
+    type = 'context', --| context or menu
+    postition = 'top-left' --| top-left, top-right, bottom-left or bottom-right
+}
 
 Config.Manage = {
     groups = {
@@ -15,31 +20,18 @@ Config.Manage = {
     }
 }
 
---| Place here your notification
-Config.Notification = function(player, msg)
-    if IsDuplicityVersion() then
-        TriggerClientEvent('esx:showNotification', player, msg, 'info')
-    else
-        ESX.ShowNotification(msg)
-    end
-end
-
 --| Place here your punish actions
 Config.PunishPlayer = function(player, reason)
     if not IsDuplicityVersion() then return end
-    if Webhook.Settings.punish then
-        DiscordLog(player, 'PUNISH', reason, 'punish')
+    if Webhook.Links.punish:len() > 0 then
+        local message = ([[
+            The player got punished
+
+            Reason: **%s**
+        ]]):format(reason)
+
+        CORE.Server.DiscordLog(player, 'PUNISH', message, Webhook.Links.punish)
     end
 
     DropPlayer(player, reason)
-end
-
---| Place here your esx import
---| Change it if you know what you are doing
-Config.EsxImport = function()
-	if IsDuplicityVersion() then
-		return exports.es_extended:getSharedObject()
-	else
-		return exports.es_extended:getSharedObject()
-	end
 end
