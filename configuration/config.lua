@@ -5,11 +5,6 @@ Config.IconColor = 'rgba(173, 216, 230, 1)' --| rgba format
 Config.Command = 'manageuid' --| Command to open manage menu
 Config.Key = 'F12' --| Keymapping
 
-Config.Menu = {
-    type = 'context', --| context or menu
-    postition = 'top-left' --| top-left, top-right, bottom-left or bottom-right
-}
-
 Config.Manage = {
     groups = {
         admin = true
