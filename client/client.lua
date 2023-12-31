@@ -1,5 +1,5 @@
 CORE = exports.zrx_utility:GetUtility()
-UniqueID = 0
+UniqueID = {}
 local NetworkIsPlayerActive = NetworkIsPlayerActive
 
 CORE.Client.RegisterKeyMappingCommand(Config.Command, Strings.cmd_desc, Config.Key, function()
@@ -7,19 +7,19 @@ CORE.Client.RegisterKeyMappingCommand(Config.Command, Strings.cmd_desc, Config.K
 end)
 
 RegisterNetEvent('zrx_uniqueid:client:getData', function(UID)
-    UniqueID = UID
+    local k, v = next(UID)
+
+    UniqueID[k] = v
 end)
 
 CreateThread(function()
-    local success = lib.waitFor(function()
+    lib.waitFor(function()
         return NetworkIsPlayerActive(cache.playerId)
     end, 'Timeout', 120000)
 
-    if success then
-        UniqueID = lib.callback.await('zrx_uniqueid:server:getData', 500)
-    end
+    TriggerServerEvent('zrx_uniqueid:server:updateData')
 end)
 
-exports('GetUID', function()
-    return UniqueID
+exports('GetUID', function(player)
+    return UniqueID?[player] or UniqueID?[cache.serverId]
 end)

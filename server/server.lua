@@ -33,12 +33,11 @@ AddEventHandler('playerDropped', function()
     end
 end)
 
-lib.callback.register('zrx_uniqueid:server:getData', function(player)
+RegisterNetEvent('zrx_uniqueid:server:updateData', function()
     if LOADED[player] then return end
-
     PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
 
-    return Player.Load(player)
+    Player.Load(source)
 end)
 
 lib.callback.register('zrx_uniqueid:server:isPlayerAllowed', function(player)
