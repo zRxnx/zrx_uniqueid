@@ -36,7 +36,7 @@ Player = {
     end,
 
     IsAllowed = function(player)
-        local xPlayer = CORE.Bridge.getVariables(player)
+        local xPlayer = CORE.Bridge.getPlayerObject(player)
 
         if Config.Manage.groups[xPlayer.group] then
             return true

@@ -1,3 +1,4 @@
+---@diagnostic disable: cast-local-type, need-check-nil
 CORE = exports.zrx_utility:GetUtility()
 PLAYER_CACHE, FETCHED, COOLDOWN, LOC_DATA, LOADED = {}, {}, {}, {}, {}
 UniqueID, IDUnique = {}, {}
@@ -34,8 +35,8 @@ AddEventHandler('playerDropped', function()
 end)
 
 RegisterNetEvent('zrx_uniqueid:server:updateData', function()
-    if LOADED[player] then return end
-    PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
+    if LOADED[source] then return end
+    PLAYER_CACHE[source] = CORE.Server.GetPlayerCache(source)
 
     Player.Load(source)
 end)
