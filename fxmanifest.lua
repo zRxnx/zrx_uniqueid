@@ -5,7 +5,10 @@ use_experimental_fxv2_oal 'yes'
 
 author 'zRxnx'
 description 'Advanced unique identifier system'
-version '1.5.1'
+version '1.5.2'
+
+docs 'https://docs.zrxnx.at'
+discord 'https://discord.gg/mcN25FJ33K'
 
 dependencies {
     'zrx_utility',
