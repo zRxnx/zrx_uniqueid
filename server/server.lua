@@ -28,18 +28,21 @@ CreateThread(function()
     end
 end)
 
-AddEventHandler('playerDropped', function()
-    if UniqueID[source] then
-        IDUnique[UniqueID[source]] = nil
-    end
-end)
-
-RegisterNetEvent('zrx_uniqueid:server:updateData', function()
-    local player = source
+RegisterNetEvent('zrx_utility:bridge:playerLoaded', function(player)
     if LOADED[player] then return end
     PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
 
     Player.Load(player)
+
+    for target, uid in pairs(UniqueID) do
+        TriggerClientEvent('zrx_uniqueid:client:getData', player, target, uid)
+    end
+end)
+
+AddEventHandler('playerDropped', function()
+    if UniqueID[source] then
+        IDUnique[UniqueID[source]] = nil
+    end
 end)
 
 lib.callback.register('zrx_uniqueid:server:isPlayerAllowed', function(player)

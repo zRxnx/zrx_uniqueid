@@ -24,7 +24,7 @@ Player = {
                 CORE.Server.DiscordLog(player, 'LOAD', message, Webhook.Links.load)
             end
 
-            TriggerClientEvent('zrx_uniqueid:client:getData', -1, { player = response[1].uid })
+            TriggerClientEvent('zrx_uniqueid:client:getData', -1, player, response[1].uid)
             return response[1].uid
         end
 
