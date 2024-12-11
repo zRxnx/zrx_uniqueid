@@ -11,6 +11,7 @@ An advanced unique identifier system for FiveM
 ### Features
 
 - Menu to edit exisiting UIDs
+- Search feature
 - Discord log with many information
 - Update checker
 - Optimized
@@ -20,9 +21,9 @@ An advanced unique identifier system for FiveM
 
 ### Exports
 
-- GetUID (client & server)
-- GetID (server)
-- ChangeUID (server)
+- GetPlayerUIDfromSID (client & server)
+- GetPlayerSIDfromUID (clieint & server)
+- ChangePlayerUID (server)
 
 ## Requirements
 

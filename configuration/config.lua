@@ -12,11 +12,12 @@ Config.Menu = {
 
 Config.Manage = {
     groups = {
-        admin = true
+        admin = true,
+        projektleitung = true
     },
 
     identifiers = { --| discord, license or discord
-        [811603268898652161] = true
+        ["discord:811603268898652161"] = true
     }
 }
 
