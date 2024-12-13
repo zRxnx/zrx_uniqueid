@@ -1,3 +1,4 @@
+---@diagnostic disable: undefined-global, redundant-value
 Player = {
     Load = function(player)
         LOADED[player] = true
@@ -22,6 +23,8 @@ Player = {
 
                 CORE.Server.DiscordLog(player, 'LOAD', message, Webhook.Links.load)
             end
+
+            TriggerClientEvent('zrx_uniqueid:client:update', -1, response[1].uid, player)
 
             return response[1].uid
         end

@@ -37,6 +37,8 @@ end)
 AddEventHandler('playerDropped', function()
     if UniqueID[source] then
         IDUnique[UniqueID[source]] = nil
+
+        TriggerClientEvent('zrx_uniqueid:client:update', -1, UniqueID[source])
     end
 end)
 
