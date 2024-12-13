@@ -1,9 +1,7 @@
 ---@diagnostic disable: cast-local-type, need-check-nil
 CORE = exports.zrx_utility:GetUtility()
 PLAYER_CACHE, FETCHED, COOLDOWN, LOC_DATA, LOADED = {}, {}, {}, {}, {}
-UniqueID, IDUnique = {}, {}
-local GetPlayers = GetPlayers
-local GetPlayerName = GetPlayerName
+UniqueID, IDUnique, UIDName = {}, {}, {}
 
 CreateThread(function()
     if Config.CheckForUpdates then
@@ -14,9 +12,16 @@ CreateThread(function()
         CREATE Table IF NOT EXISTS `zrx_uniqueid` (
             `identifier` varchar(255) DEFAULT NULL,
             `uid` int(11) NOT NULL AUTO_INCREMENT,
+            `name` varchar(255) DEFAULT NULL,
             PRIMARY KEY (`uid`)
         ) ENGINE=InnoDB;
     ]])
+
+    local response = MySQL.query.await('SELECT `uid`, `name` FROM `zrx_uniqueid`', {})
+
+    for k, row in pairs(response) do
+        UIDName[row.uid] = row.name
+    end
 
     for i, player in pairs(GetPlayers()) do
         player = tonumber(player)
@@ -33,15 +38,13 @@ RegisterNetEvent('zrx_utility:bridge:playerLoaded', function(player)
     PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
 
     Player.Load(player)
-
-    for target, uid in pairs(UniqueID) do
-        TriggerClientEvent('zrx_uniqueid:client:getData', player, target, uid)
-    end
 end)
 
 AddEventHandler('playerDropped', function()
     if UniqueID[source] then
         IDUnique[UniqueID[source]] = nil
+
+        TriggerClientEvent('zrx_uniqueid:client:update', -1, UniqueID[source])
     end
 end)
 
@@ -49,11 +52,15 @@ lib.callback.register('zrx_uniqueid:server:isPlayerAllowed', function(player)
     return Player.IsAllowed(player)
 end)
 
-lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
-    if not Player.IsAllowed(player) then
-        return Config.PunishPlayer(player, 'Tried to trigger "zrx_uniqueid:server:getUidData"')
-    end
+lib.callback.register('zrx_uniqueid:server:getPlayerUIDfromSID', function(player, id)
+    return UniqueID[id]
+end)
 
+lib.callback.register('zrx_uniqueid:server:getPlayerSIDfromUID', function(player, uid)
+    return IDUnique[uid]
+end)
+
+lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
     if not Player.IsAllowed(player) then
         return {}
     end
@@ -66,7 +73,7 @@ lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
             uid = data.uid,
             online = not not IDUnique[data.uid],
             id = IDUnique[data.uid] or 0,
-            name = GetPlayerName(IDUnique[data.uid]) or 'INVALID'
+            name = UIDName[data.uid] or 'NO DATA'
         }
     end
 
@@ -90,48 +97,19 @@ lib.callback.register('zrx_uniqueid:server:checkUniqueID', function(player, uid)
 end)
 
 RegisterNetEvent('zrx_uniqueid:server:changeUniqueID', function(oldUID, newUID)
-    if not Player.IsAllowed(source) then
-        return Config.PunishPlayer(source, 'Tried to trigger "zrx_uniqueid:server:changeUniqueID"')
-    end
-
-    if Webhook.Links.change:len() > 0 then
-        local message = ([[
-            The player changed a UniqueID
-
-            Old UniqueID: **%s**
-            New UniqueID: **%s**
-        ]]):format(oldUID, newUID)
-
-        CORE.Server.DiscordLog(source, 'CHANGE', message, Webhook.Links.change)
-    end
-
-    MySQL.update.await('UPDATE zrx_uniqueid SET uid = ? WHERE uid = ?', {
-        newUID, oldUID
-    })
-
-    if IDUnique[oldUID] then
-        Player.Load(IDUnique[oldUID])
-        IDUnique[oldUID] = nil
-    end
+    Player.ChangeUID(source, oldUID, newUID)
 end)
 
-exports('GetUID', function(player)
+exports('GetPlayerUIDfromSID', function(player)
     return UniqueID[player]
 end)
 
-exports('GetID', function(uid)
+exports('GetPlayerSIDfromUID', function(uid)
     return IDUnique[uid]
 end)
 
-exports('ChangeUID', function(oldUID, newUID)
-    MySQL.update.await('UPDATE zrx_uniqueid SET uid = ? WHERE uid = ?', {
-        newUID, oldUID
-    })
-
-    if IDUnique[oldUID] then
-        Player.Load(IDUnique[oldUID])
-        IDUnique[oldUID] = nil
-    end
+exports('ChangePlayerUID', function(oldUID, newUID)
+    return Player.ChangeUID(source, oldUID, newUID)
 end)
 
 exports('hasCooldown', function(player)
