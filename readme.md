@@ -33,7 +33,7 @@ An advanced unique identifier system for FiveM
 
 ## Preview
 
-### [Video](https://youtu.be/6CzgZKzR0zY?si=dYRg81a6lwhEq6d0)
+### [Video](https://youtu.be/aJXMVmg92ig)
 
 ![Discord Log](https://i.imgur.com/TDfftS2.png)
 ![Main Page](https://i.imgur.com/4heQ0rN.png)
