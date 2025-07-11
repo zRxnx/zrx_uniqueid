@@ -3,31 +3,33 @@ game 'gta5'
 lua54 'yes'
 use_experimental_fxv2_oal 'yes'
 
+name 'zrx_uniqueid'
 author 'zRxnx'
+version '3.0.0'
 description 'Advanced unique identifier system'
-version '2.1.1'
+repository 'https://github.com/zrxnx/zrx_uniqueid'
 
 docs 'https://docs.zrxnx.at'
 discord 'https://discord.gg/mcN25FJ33K'
 
 dependencies {
-    'zrx_utility',
+    '/server:6116',
+    '/onesync',
 	'ox_lib',
     'oxmysql'
 }
 
 shared_scripts {
     '@ox_lib/init.lua',
-    'configuration/config.lua',
-    'configuration/strings.lua'
+    'utils.lua',
+    'configuration/*.lua',
 }
 
 client_scripts {
-    'client/*.lua'
+    'client/*.lua',
 }
 
 server_scripts {
     '@oxmysql/lib/MySQL.lua',
-    'configuration/webhook.lua',
-    'server/*.lua'
+    'server/*.lua',
 }

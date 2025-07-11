@@ -5,7 +5,8 @@ OpenMainMenu = function()
     local index = 0
 
     if not isPlayerAllowed then
-        return CORE.Bridge.notification(Strings.no_perms)
+        ZRX_UTIL.notify(nil, Strings.no_perms)
+        return
     end
 
     MENU[#MENU + 1] = {
@@ -27,15 +28,17 @@ OpenMainMenu = function()
             })
 
             if not input then
-                CORE.Bridge.notification(Strings.not_fill)
-                return OpenMainMenu()
+                ZRX_UTIL.notify(nil, Strings.not_fill)
+                lib.showContext('zrx_uniqueid:menu:main')
+                return
             end
 
             local response = lib.callback.await('zrx_uniqueid:server:checkUniqueID', 500)
 
             if not response then
-                CORE.Bridge.notification(Strings.search_no)
-                return OpenMainMenu()
+                ZRX_UTIL.notify(nil, Strings.search_no)
+                lib.showContext('zrx_uniqueid:menu:main')
+                return
             end
 
             for i, data in pairs(UID_DATA) do
@@ -46,28 +49,27 @@ OpenMainMenu = function()
             end
 
             if index == 0 then
-                CORE.Bridge.notification(Strings.search_no)
-                return OpenMainMenu()
+                ZRX_UTIL.notify(nil, Strings.search_no)
+                lib.showContext('zrx_uniqueid:menu:main')
+                return
             end
 
             OpenManageMenu({
                 uid = input[1],
                 online = UID_DATA[index].online,
                 id = UID_DATA[index].id,
-                name = UID_DATA[index].name
             })
         end
     }
 
     for i, data in pairs(UID_DATA) do
         MENU[#MENU + 1] = {
-            title = (Strings.view_title):format(data.uid),
+            title = Strings.view_title:format(data.uid),
             description = Strings.view_desc,
             arrow = true,
             icon = 'fa-solid fa-user',
             iconColor = data.online and 'rgba(0, 255, 0, 1)' or 'rgba(255, 0, 0, 1)',
             metadata = {
-                { label = Strings.metadata_name, value = data.name },
                 { label = Strings.metadata_sid, value = data.id },
                 { label = Strings.metadata_online, value = data.online and Strings.metadata_online_yes or Strings.metadata_online_no },
             },
@@ -75,7 +77,6 @@ OpenMainMenu = function()
                 uid = data.uid,
                 online = data.online,
                 id = data.id,
-                name = data.name
             },
             onSelect = function(args)
                 OpenManageMenu(args)
@@ -83,7 +84,7 @@ OpenMainMenu = function()
         }
     end
 
-    CORE.Client.CreateMenu({
+    ZRX_UTIL.createMenu({
         id = 'zrx_uniqueid:menu:main',
         title = Strings.menu_main,
     }, MENU, Config.Menu.type ~= 'menu', Config.Menu.postition)
@@ -94,12 +95,13 @@ OpenManageMenu = function(data)
     local isPlayerAllowed = lib.callback.await('zrx_uniqueid:server:isPlayerAllowed', 500)
 
     if not isPlayerAllowed then
-        return CORE.Bridge.notification(Strings.no_perms)
+        ZRX_UTIL.notify(nil, Strings.no_perms)
+        return
     end
 
     MENU[#MENU + 1] = {
         title = Strings.manage_data_title,
-        description = (Strings.manage_data_desc):format(data.name, data.id, data.uid),
+        description = Strings.manage_data_desc:format(data.id, data.uid),
         arrow = false,
         icon = 'fa-solid fa-user',
         iconColor = data.online and 'rgba(0, 255, 0, 1)' or 'rgba(255, 0, 0, 1)',
@@ -116,7 +118,7 @@ OpenManageMenu = function(data)
             local input = lib.inputDialog(Strings.alert_title, {
                 {
                     type = 'number',
-                    label = (Strings.alert_label):format(data.uid),
+                    label = Strings.alert_label:format(data.uid),
                     description = Strings.alert_desc,
                     required = true,
                     default = 1,
@@ -125,22 +127,24 @@ OpenManageMenu = function(data)
             })
 
             if not input then
-                CORE.Bridge.notification(Strings.not_fill)
-                return OpenManageMenu(data)
+                ZRX_UTIL.notify(nil, Strings.not_fill)
+                lib.showContext('zrx_uniqueid:menu:main')
+                return
             end
 
-            local response = lib.callback.await('zrx_uniqueid:server:checkUniqueID', 500)
+            local response = lib.callback.await('zrx_uniqueid:server:checkUniqueID', 500, input[1])
 
-            if not response then
-                CORE.Bridge.notification(Strings.already_in_use)
-                return OpenManageMenu(data)
+            if response then
+                ZRX_UTIL.notify(nil, Strings.already_in_use)
+                lib.showContext('zrx_uniqueid:menu:main')
+                return
             end
 
             TriggerServerEvent('zrx_uniqueid:server:changeUniqueID', data.uid, input[1])
         end
     }
 
-    CORE.Client.CreateMenu({
+    ZRX_UTIL.createMenu({
         id = 'zrx_uniqueid:manage:main',
         title = Strings.menu_manage,
         menu = 'zrx_uniqueid:menu:main',

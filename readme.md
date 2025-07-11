@@ -10,33 +10,35 @@ An advanced unique identifier system for FiveM
 
 ### Features
 
-- Menu to edit exisiting UIDs
+- Menu to edit existing UIDs
 - Search feature
-- Discord log with many information
+- ox_lib log
 - Update checker
 - Optimized
 - Synced
 - 0.0 ms on idle
 - 0.0 ms while in use
 
-### Exports
+### API
 
-- GetPlayerUIDfromSID (client & server)
-- GetPlayerSIDfromUID (clieint & server)
+#### Exports
+
+- GetPlayerUIDfromSID (replicated)
+- GetPlayerSIDfromUID (replicated)
 - ChangePlayerUID (server)
+
+#### Statebags
+
+- zrx_uniqueid:uid
 
 ## Requirements
 
-- zrx_utility (latest)
 - ox_lib (latest)
 - oxmysql (latest)
 
 ## Preview
 
 ### [Video](https://youtu.be/aJXMVmg92ig)
-
-![Discord Log](https://i.imgur.com/TDfftS2.png)
-![Main Page](https://i.imgur.com/4heQ0rN.png)
 
 ## Installation
 

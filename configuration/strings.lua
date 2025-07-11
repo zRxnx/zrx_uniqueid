@@ -17,13 +17,12 @@ Strings = {
     manage_desc = 'Click to change UniqueID',
 
     manage_data_title = 'Player data',
-    manage_data_desc = 'Name: %s  \nServer ID: %s  \nUnique ID: %s', --| arg1: Player name - arg2: Player id
+    manage_data_desc = 'Server ID: %s  \nUnique ID: %s',
 
     alert_title = 'Change UniqueID',
     alert_label = 'Current UID: #%s', --| arg1: UID
     alert_desc = 'Click on "Confirm" to accept change',
 
-    metadata_name = 'Name',
     metadata_sid = 'Server ID',
     metadata_online = 'Online',
     metadata_online_yes = 'Yes',

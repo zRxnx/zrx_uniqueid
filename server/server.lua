@@ -1,70 +1,58 @@
 ---@diagnostic disable: cast-local-type, need-check-nil
-CORE = exports.zrx_utility:GetUtility()
-PLAYER_CACHE, FETCHED, COOLDOWN, LOC_DATA, LOADED = {}, {}, {}, {}, {}
-UniqueID, IDUnique, UIDName = {}, {}, {}
+UniqueID, IDUnique = {}, {}
 
 CreateThread(function()
-    if Config.CheckForUpdates then
-        CORE.Server.CheckVersion('zrx_uniqueid')
-    end
+    lib.versionCheck('zrxnx/zrx_uniqueid')
 
     MySQL.Sync.execute([[
         CREATE Table IF NOT EXISTS `zrx_uniqueid` (
-            `identifier` varchar(255) DEFAULT NULL,
-            `uid` int(11) NOT NULL AUTO_INCREMENT,
-            `name` varchar(255) DEFAULT NULL,
+            `identifier` varchar(50) DEFAULT NULL,
+            `uid` int(100) NOT NULL AUTO_INCREMENT,
             PRIMARY KEY (`uid`)
         ) ENGINE=InnoDB;
     ]])
 
-    local response = MySQL.query.await('SELECT `uid`, `name` FROM `zrx_uniqueid`', {})
+    Wait(1000)
 
-    for k, row in pairs(response) do
-        UIDName[row.uid] = row.name
-    end
-
-    for i, player in pairs(GetPlayers()) do
-        player = tonumber(player)
-        PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
-
-        if not LOADED[player] then
-            Player.Load(player)
-        end
+    for player, state in pairs(ZRX_UTIL.getPlayers()) do
+        ManagePlayer(player).load()
     end
 end)
 
-RegisterNetEvent('zrx_utility:bridge:playerLoaded', function(player)
-    if LOADED[player] then return end
-    PLAYER_CACHE[player] = CORE.Server.GetPlayerCache(player)
-
-    Player.Load(player)
+RegisterNetEvent('esx:playerLoaded', function(player)
+    ManagePlayer(player).load()
 end)
 
 AddEventHandler('playerDropped', function()
-    if UniqueID[source] then
-        IDUnique[UniqueID[source]] = nil
+    local license = GetPlayerIdentifierByType(source, 'license'):gsub('license:', '')
 
-        TriggerClientEvent('zrx_uniqueid:client:update', -1, UniqueID[source])
+    if UniqueID[license] then
+        IDUnique[UniqueID[license]] = nil
+
+        TriggerClientEvent('zrx_uniqueid:client:update', -1, UniqueID[license])
     end
 end)
 
+AddEventHandler('playerConnecting', function(name, setKickReason, deferrals)
+    ManagePlayer(source).load()
+end)
+
 lib.callback.register('zrx_uniqueid:server:isPlayerAllowed', function(player)
-    return Player.IsAllowed(player)
+    print('zrx_uniqueid:server:isPlayerAllowed')
+    return ManagePlayer(player).isAllowed()
 end)
 
 lib.callback.register('zrx_uniqueid:server:getPlayerUIDfromSID', function(player, id)
-    return UniqueID[id]
+    print('zrx_uniqueid:server:getPlayerUIDfromSID')
+    return ManagePlayer(id).load()
 end)
 
 lib.callback.register('zrx_uniqueid:server:getPlayerSIDfromUID', function(player, uid)
+    print('zrx_uniqueid:server:getPlayerSIDfromUID')
     return IDUnique[uid]
 end)
 
 lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
-    if not Player.IsAllowed(player) then
-        return {}
-    end
-
     local DATA = {}
     local response = MySQL.query.await('SELECT * FROM `zrx_uniqueid`')
 
@@ -73,7 +61,6 @@ lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
             uid = data.uid,
             online = not not IDUnique[data.uid],
             id = IDUnique[data.uid] or 0,
-            name = UIDName[data.uid] or 'NO DATA'
         }
     end
 
@@ -81,37 +68,43 @@ lib.callback.register('zrx_uniqueid:server:getUidData', function(player)
 end)
 
 lib.callback.register('zrx_uniqueid:server:checkUniqueID', function(player, uid)
-    if not Player.IsAllowed(player) then
-        return Config.PunishPlayer(player, 'Tried to trigger "zrx_uniqueid:server:checkUniqueID"')
+    if not ManagePlayer(player).isAllowed() then
+        return
     end
+
+    print(player, uid)
 
     local response = MySQL.query.await('SELECT `identifier` FROM `zrx_uniqueid` WHERE `uid` = ?', {
         uid
     })
 
-    if response[1]?.uid then
+    print(json.encode(response, { indent = true }))
+ 
+    if response[1]?.identifier then
+        return true
+    else
         return false
     end
-
-    return true
 end)
 
 RegisterNetEvent('zrx_uniqueid:server:changeUniqueID', function(oldUID, newUID)
-    Player.ChangeUID(source, oldUID, newUID)
+    local player = source
+
+    if not ManagePlayer(player).isAllowed() then
+        return
+    end
+
+    ManagePlayer(player).changeUID(oldUID, newUID)
 end)
 
 exports('GetPlayerUIDfromSID', function(player)
-    return UniqueID[player]
+    return Player(player).state['zrx_uniqueid:uid']
 end)
 
 exports('GetPlayerSIDfromUID', function(uid)
     return IDUnique[uid]
 end)
 
-exports('ChangePlayerUID', function(oldUID, newUID)
-    return Player.ChangeUID(source, oldUID, newUID)
-end)
-
-exports('hasCooldown', function(player)
-    return not not COOLDOWN[PLAYER_CACHE[player].identifier]
+exports('ChangePlayerUID', function(player, oldUID, newUID)
+    return ManagePlayer(player).changeUID(oldUID, newUID)
 end)
